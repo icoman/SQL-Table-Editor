@@ -21,6 +21,11 @@ DSN = postgresql://ioan:***@localhost/nopass
 DSN = mysql+pymysql://root:admin@localhost/database1
 DSN = sqlite+pysqlite:///python.db
 
+accessprompt = Access Password:
+;accesspassword = 123
+
+;enabledelete = yes
+
 ```
 
 No copyright specified.

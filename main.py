@@ -107,9 +107,8 @@ Python version:
             self.DATAFOLDER = os.getcwd()
         configFilename = string.join((self.DATAFOLDER, "config.ini"), os.sep)
         self.config = getPropsDict(configFilename, '=') #sep is '='
-        self.components.title.text = self.config.get('title','-no title-')
+        self.components.title.text = self.config.get('title','SQL Table Editor')
         self.title = self.components.title.text
-        self.components.DSNList.items = self.config.get('DSN',[])
         self.components.tableList.items = []
         self.components.tableList.enabled = False
         self.components.appendRecord.enabled = False
@@ -117,6 +116,30 @@ Python version:
         self.components.Refresh.enabled = False
         self.components.filter.text = ''
         self.components.filter.enabled = False
+        DSN = self.config.get('DSN',[])
+        if type(DSN) == type([]):
+            self.components.DSNList.items = DSN
+        else:
+            self.components.DSNList.items = [DSN]
+            self.components.DSNList.selection = 0
+            self.components.DSNList.stringSelection = DSN
+            self.on_DSNList_select(None)
+        accesspassword = self.config.get('accesspassword',None)
+        accessprompt = self.config.get('accessprompt','Access Password:')
+        if self.config.get('enabledelete', False):
+            self.enabledelete = True
+        else:
+            self.enabledelete = False
+        if accesspassword:
+            result = dialog.passwordTextEntryDialog(self, 
+                            accessprompt,
+                            accessprompt,
+                            '')
+            if accesspassword == result.text:
+                dialog.messageDialog(self, '''Ok!''', accessprompt,wx.ICON_INFORMATION | wx.OK) #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL)
+            else:
+                sys.exit(1)
+
 
     def on_DSNList_select(self, event):
         #1 - select DSN
@@ -148,7 +171,7 @@ Python version:
                 self.components.myGrid.AdjustScrollbars()
                 self.components.filter.enabled = True
                 self.components.appendRecord.enabled = True
-                self.components.deleteRecord.enabled = True
+                self.components.deleteRecord.enabled = self.enabledelete
                 self.components.Refresh.enabled = True
             except Exception as ex:
                 self.components.myGrid.SetTable(EmptyTable())
@@ -177,6 +200,30 @@ Python version:
                 self.on_tableList_select(None)
         else:
             dialog.messageDialog(self, 'Nothing selected.', 'Info',wx.ICON_INFORMATION | wx.OK)
+
+
+def fix_frozen_apps():
+    #
+    #fix import for py2exe, cx_freeze, pyinstaller, ...
+    #
+    #import here whatever fail to import when application is frozen
+    #
+    import pyodbc, pymssql, _mssql
+    from sqlalchemy.sql import default_comparator
+    #from PythonCard.components import slider
+    #from PythonCard.components import radiogroup
+    from PythonCard.components import button
+    #from PythonCard.components import list
+    from PythonCard.components import choice
+    from PythonCard.components import statictext
+    #from PythonCard.components import checkbox
+    #from PythonCard.components import gauge
+    #from PythonCard.components import multicolumnlist
+    #from PythonCard.components import passwordfield
+    from PythonCard.components import textarea
+    from PythonCard.components import combobox
+    #from PythonCard.components import calendar
+    from PythonCard.components import grid
 
 
 if __name__ == '__main__':
